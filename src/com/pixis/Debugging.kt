@@ -2,11 +2,9 @@ package com.pixis
 
 import processing.core.PApplet
 
-/**
- * Created by Dan on 2/26/2017.
- */
 object Debugging {
 
+    @Suppress("unused")
     fun printEdges(edgeList: List<Edge>) {
         for ((source, target, weight) in edgeList) {
             PApplet.println("[$source, $target] = $weight")
@@ -16,18 +14,20 @@ object Debugging {
     fun printMatrix(matrix: Array<IntArray>, matrixSize: Int) {
         printlines(3)
 
+        val spacing = "%5s"
+
         val a: Char = 65.toChar()
         //Print header
-        PApplet.print("  ")
+        System.out.printf(spacing, ' ')
         for (y in 0..matrixSize - 1) {
-            PApplet.print((a.toInt() + y).toChar() + " ")
+            System.out.printf(spacing, (a.toInt() + y).toChar())
         }
-        PApplet.println()
+        System.out.println()
         //Print
         for (x in 0..matrixSize - 1) {
-            PApplet.print((a.toInt() + x).toChar() + " ") //Row header
+            System.out.printf(spacing, (a.toInt() + x).toChar()) //Row header
             for (y in 0..matrixSize - 1) {
-                PApplet.print(matrix[x][y].toString() + " ")
+                System.out.printf(spacing, matrix[x][y].toString())
             }
             PApplet.println()
         }

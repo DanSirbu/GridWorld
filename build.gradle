@@ -1,0 +1,28 @@
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+//noinspection GroovyUnusedAssignment
+mainClassName = "com.pixis.ExampleAppletKt"
+
+buildscript {
+    ext.kotlin_version = '1.0.6'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+sourceSets {
+    main.java.srcDirs += 'src/'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile group: 'org.processing', name: 'core', version: '3.2.3'
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}

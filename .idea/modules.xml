@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/QLearning.iml" filepath="$PROJECT_DIR$/QLearning.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QLearning.iml" filepath="$PROJECT_DIR$/.idea/modules/QLearning.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QLearning_main.iml" filepath="$PROJECT_DIR$/.idea/modules/QLearning_main.iml" group="QLearning" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QLearning_test.iml" filepath="$PROJECT_DIR$/.idea/modules/QLearning_test.iml" group="QLearning" />
     </modules>
   </component>
 </project>

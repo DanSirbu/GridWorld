@@ -4,9 +4,6 @@ import com.pixis.model.Edge
 import java.awt.Point
 import java.util.*
 
-/**
- * Created by Work on 2/26/2017.
- */
 class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: Int = 500) {
     private val iteration = 0
 
@@ -98,7 +95,7 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
         val maxNextReward: Int = nextTargets.map { RMatrix[a_t][it] }.max() ?: 0
 
         QMatrix[s_t][a_t] = (QMatrix[s_t][a_t] + alpha * (RMatrix[s_t][a_t] + gamma * maxNextReward - QMatrix[s_t][a_t])).toInt()
-        println(iteration.toString() + ": " + (65 + s_t).toChar() + "-" + (65 + a_t).toChar() + " = " + QMatrix[s_t][a_t])
+        println(iteration.inc().toString() + ": " + (65 + s_t).toChar() + "-" + (65 + a_t).toChar() + " = " + QMatrix[s_t][a_t])
 
         s_t = a_t
     }

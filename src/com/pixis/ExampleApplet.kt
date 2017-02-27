@@ -7,7 +7,6 @@ import java.awt.Point
 fun main(args: Array<String>) {
     PApplet.main("com.pixis.ExampleApplet")
 }
-
 class ExampleApplet : PApplet() {
     val numCells = 3
     val grid = Grid(numCells = numCells, rewardGridLocation = Point(0, 0))
@@ -28,6 +27,9 @@ class ExampleApplet : PApplet() {
 
     override fun mouseClicked() {
         //Note, since we use row = x, y and x are reversed
+        if(!QLearner.Paused)
+            return
+
         val gridY = mouseX / cellPixelSize
         val gridX = mouseY / cellPixelSize
 
@@ -36,7 +38,10 @@ class ExampleApplet : PApplet() {
     override fun keyPressed() {
         when (key) {
             ' ' -> QLearner.Paused = !QLearner.Paused
-            10.toChar() -> QLearner.isLearning = !QLearner.isLearning // 10 = Enter
+            10.toChar() -> { // 10 = Enter
+                QLearner.isLearning = !QLearner.isLearning
+                System.out.println("Learning: " + QLearner.isLearning)
+            }
             'r' -> Debugging.printMatrix(QLearner.RMatrix, QLearner.matrixSize)
             'q' -> Debugging.printMatrix(QLearner.QMatrix, QLearner.matrixSize)
         }

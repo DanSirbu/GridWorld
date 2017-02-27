@@ -8,8 +8,8 @@ fun main(args: Array<String>) {
     PApplet.main("com.pixis.ExampleApplet")
 }
 class ExampleApplet : PApplet() {
-    val numCells = 3
-    val grid = Grid(numCells = numCells, rewardGridLocation = Point(0, 0))
+    val numCells = 4
+    val grid = Grid(numCells = numCells, rewardGridLocation = Point(1, 2))
     val QLearner = QLearning(grid = grid, trainingDelay = 100, trainedDelay = 500)
 
     val screenSize = 500

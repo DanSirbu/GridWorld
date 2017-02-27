@@ -1,4 +1,4 @@
-package com.pixis
+package com.pixis.model
 
 import java.awt.Point
 

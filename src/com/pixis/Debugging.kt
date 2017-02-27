@@ -1,5 +1,6 @@
 package com.pixis
 
+import com.pixis.model.Edge
 import processing.core.PApplet
 
 object Debugging {

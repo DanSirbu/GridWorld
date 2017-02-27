@@ -65,3 +65,6 @@ fabric.properties
 hs_err_pid*
 .idea/inspectionProfiles/
 .idea/vcs.xml
+.gradle/
+build/
+!/gradle/wrapper/gradle-wrapper.jar

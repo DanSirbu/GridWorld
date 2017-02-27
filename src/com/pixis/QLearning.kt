@@ -30,18 +30,10 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
         createRMatrix()
     }
 
-    //Inverse of unroll
-    fun matrixToGridPoint(sourceOrTarget: Int): Point {
-        val x = sourceOrTarget % grid.numCells
-        val y = sourceOrTarget / grid.numCells
-
-        return Point(x, y)
-    }
-
     //We are basically unrolling our grid
     //Ex.
     // (x, y)
-    // A(0,0) | C (1,0)
+    // A(0,0) | C (0,1)
     // B(1,0) | D (1, 1)
     //
     //We want to convert the coordinate to:
@@ -53,6 +45,14 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
     // D (3)
     fun gridPointToMatrix(p: Point): Int {
         return p.x + grid.numCells * p.y
+    }
+
+    //Inverse of gridPointToMatrix
+    fun matrixToGridPoint(sourceOrTarget: Int): Point {
+        val x = sourceOrTarget % grid.numCells
+        val y = sourceOrTarget / grid.numCells
+
+        return Point(x, y)
     }
 
     fun QIteration() {

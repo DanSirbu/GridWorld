@@ -19,7 +19,7 @@ class ExampleApplet : PApplet() {
     val screenSize = 500
     val cellPixelSize = screenSize / Settings.NUM_CELLS
 
-    val showGrid = false
+    var showGrid = false
 
     override fun settings() {
         size(screenSize, screenSize)
@@ -34,12 +34,12 @@ class ExampleApplet : PApplet() {
         val row = mouseY / cellPixelSize
         val column = mouseX / cellPixelSize
 
-        QLearner.s_t = Coordinate(row, column).toMatrixIndex()
+        QLearner.state = Coordinate(row, column).toMatrixIndex()
     }
 
     override fun keyPressed() {
         if (key == CODED.toChar()) {
-            val xy = Coordinate.fromMatrixIndex(QLearner.s_t)
+            val xy = Coordinate.fromMatrixIndex(QLearner.state)
             when (keyCode) {
                 PConstants.UP -> moveStateTo(xy.row - 1, xy.column)
                 PConstants.LEFT -> moveStateTo(xy.row, xy.column - 1)
@@ -50,6 +50,7 @@ class ExampleApplet : PApplet() {
             when (key) {
                 ' ' -> {
                     QLearner.Paused = !QLearner.Paused
+                    showGrid = QLearner.Paused
                     if(QLearner.Paused)
                         System.out.println("Paused")
                     else
@@ -66,11 +67,12 @@ class ExampleApplet : PApplet() {
     }
 
     private fun moveStateTo(row1: Int, column1: Int) {
-        val row = constrain(row1, 0, lastCellIndex)
-        val column = constrain(column1, 0, lastCellIndex)
+        val coordinate = Coordinate(row1, column1)
+        if(!coordinate.isValid())
+            return
 
-        val a_t = Coordinate(row, column).toMatrixIndex()
-        QLearner.QLearningIteration(a_t)
+        val action = coordinate.toMatrixIndex()
+        QLearner.QLearningIteration(action)
     }
 
     override fun setup() {
@@ -84,7 +86,7 @@ class ExampleApplet : PApplet() {
 
         //if (QLearner.isLearning) QLearner.QLearningIteration() else QLearner.QIteration()
 
-        val currentStatePoint = Coordinate.fromMatrixIndex(QLearner.s_t)
+        val currentStatePoint = Coordinate.fromMatrixIndex(QLearner.state)
 
         val a = 'A'
         //Draw states
@@ -93,11 +95,12 @@ class ExampleApplet : PApplet() {
                 val coordinate = Coordinate(row, column)
 
                 if (showGrid) {
-                    fill(getStateColor(grid.cells[row][column]))
-                    //Note, since we use row = x, y and x are reversed
-                    rect((column * cellPixelSize).toFloat(), (row * cellPixelSize).toFloat(), cellPixelSize.toFloat(), cellPixelSize.toFloat()) //rect(xleftcorner, ytopcorner, width, height);
+                    drawState(row, column)
                 } else {
                     drawTriangles(coordinate)
+                    if(coordinate.toMatrixIndex() == QLearner.finalState) { //Always draw reward
+                        drawState(row, column)
+                    }
                 }
 
                 if (currentStatePoint == coordinate) {
@@ -112,15 +115,29 @@ class ExampleApplet : PApplet() {
         }
     }
 
+    private fun drawState(row: Int, column:Int) {
+        fill(getStateColor(grid.cells[row][column]))
+        //Note, since we use row = x, y and x are reversed
+        rect((column * cellPixelSize).toFloat(), (row * cellPixelSize).toFloat(), cellPixelSize.toFloat(), cellPixelSize.toFloat()) //rect(xleftcorner, ytopcorner, width, height);
+    }
+
     fun getStateColor(reward: Int): Int {
         var cellColor = Color.gray
         if (reward > 0) {
-            cellColor = Color.green
+            cellColor = lerpColor(reward / 100f, Color.gray, Color.green)
         } else if (reward < 0) {
-            cellColor = Color.red
+            cellColor = lerpColor(reward / 100f, Color.gray, Color.red)
         }
 
         return cellColor.rgb
+    }
+
+    fun lerpColor(percent: Float, colorA: Color, colorB: Color): Color {
+        val r = percent * (colorB.red - colorA.red) + colorA.red
+        val g = percent * (colorB.green - colorA.green) + colorA.green
+        val b = percent * (colorB.blue - colorA.blue) + colorA.blue
+
+        return Color(r.toInt(), g.toInt(), b.toInt())
     }
 
     private fun drawTriangles(coordinate: Coordinate) {

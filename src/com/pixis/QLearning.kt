@@ -7,13 +7,11 @@ import java.awt.Point
 import java.util.*
 
 class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: Int = 500) {
-    private var iteration = 0
-
-    val rewardRow = grid.rewardGridLocation.toMatrixIndex()
-
     val matrixSize = grid.numCells * grid.numCells
 
-    var s_t: Int = 1 //s_t = currentState
+    var state: Int = 1 //state = currentState
+    val finalState = grid.rewardGridLocation.toMatrixIndex()
+
     var Paused = false
     var isLearning: Boolean = true
 
@@ -28,8 +26,8 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
         //Initialize QMatrix
         QMatrix.forEach { it.fill(0) }
 
-        //Initialize Reward matrix to -1 (no edge)
-        RMatrix.forEach { it.fill(NO_EDGE) }
+        //Initialize Reward matrix to (no edge)
+        RMatrix.forEach { it.fill(Settings.NO_EDGE) }
         createRMatrix()
     }
 
@@ -54,51 +52,59 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
         lastUpdateTime = System.currentTimeMillis()
 
         //Restart q search if at the end
-        if(s_t == rewardRow)
+        if(state == rewardRow)
             restart()
 
-        val nextTargets = getNextStatesIndexes(s_t)
-        val highestRewardIndex: Int = nextTargets.map { Pair(it, RMatrix[s_t][it]) /* [rewardIndex, rewardValue] */ }.maxBy { it.second }!!.first
+        val nextTargets = getNextStatesIndexes(state)
+        val highestRewardIndex: Int = nextTargets.map { Pair(it, RMatrix[state][it]) /* [rewardIndex, rewardValue] */ }.maxBy { it.second }!!.first
 
-        s_t = highestRewardIndex
+        state = highestRewardIndex
     }*/
 
 
     /*private fun restart() {
-        s_t = random.nextInt(matrixSize) //note nextInt is exclusive
+        state = random.nextInt(matrixSize) //note nextInt is exclusive
         println("Restarting")
     }*/
 
     //Q(st,at)←Q(st,at)+α[rt+γmaxaQ(st+1,a)−Q(st,at)]
-    fun QLearningIteration(a_t: Int): Int {
+    fun QLearningIteration(action: Int): Int {
         /*if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainingDelay))
             return*/
 
         //Restart q search
-        //if(s_t == rewardRow) restart()
+        //if(state == rewardRow) restart()
 
         //lastUpdateTime = System.currentTimeMillis()
 
-        //val nextStatesIndexes = getNextStatesIndexes(s_t)
-        //val a_t = nextStatesIndexes[random.nextInt(nextStatesIndexes.size)]
+        //val nextStatesIndexes = getNextStatesIndexes(state)
+        //val action = nextStatesIndexes[random.nextInt(nextStatesIndexes.size)]
 
+        if(state == finalState) {
+            state = action
+            return 0
+        }
 
-        val nextTargets = getNextStatesIndexes(a_t)
-        val maxNextReward: Int = nextTargets.map { RMatrix[a_t][it] }.max() ?: 0
+        QMatrix[state][action] = (QMatrix[state][action] + Settings.Alpha * (RMatrix[state][action] + Settings.DiscountFactor * maxQ(action) - QMatrix[state][action])).toInt()
+        //println((++iteration).toString() + ": " + (65 + state).toChar() + "-" + (65 + action).toChar() + " = " + QMatrix[state][action])
 
-        QMatrix[s_t][a_t] = (QMatrix[s_t][a_t] + alpha * (RMatrix[s_t][a_t] + gamma * maxNextReward - QMatrix[s_t][a_t])).toInt()
-        //println((++iteration).toString() + ": " + (65 + s_t).toChar() + "-" + (65 + a_t).toChar() + " = " + QMatrix[s_t][a_t])
-
-        val updatedQValue = QMatrix[s_t][a_t]
-        s_t = a_t
+        val updatedQValue = QMatrix[state][action]
+        state = action
         return updatedQValue
     }
 
+    /**
+     * Gets the max q for the action
+     */
+    fun maxQ(action: Int): Int {
+        val nextTargets = getNextStatesIndexes(action)
+        return nextTargets.map { QMatrix[action][it] }.max() ?: 0
+    }
     fun getNextStatesIndexes(rowIndex: Int): IntArray {
         val validIndexes = ArrayList<Int>()
         val row: IntArray = RMatrix[rowIndex]
 
-        row.forEachIndexed { i, item ->  if(item != -1) validIndexes.add(i) }
+        row.forEachIndexed { i, item ->  if(item != Settings.NO_EDGE) validIndexes.add(i) }
 
         return validIndexes.toIntArray()
     }

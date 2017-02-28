@@ -1,13 +1,16 @@
 package com.pixis
 
+import com.pixis.model.Coordinate
 import com.pixis.model.Edge
+import com.pixis.model.toMatrixIndex
 import java.awt.Point
 import java.util.*
 
 class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: Int = 500) {
     private var iteration = 0
 
-    val rewardRow = gridPointToMatrix(grid.rewardGridLocation)
+    val rewardRow = grid.rewardGridLocation.toMatrixIndex()
+
     val matrixSize = grid.numCells * grid.numCells
 
     var s_t: Int = 1 //s_t = currentState
@@ -18,8 +21,8 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
     var QMatrix = Array(matrixSize) { IntArray(matrixSize) }
 
     //For Q Update
-    val random = Random(10) //Use seed to be able to compare results
-    var lastUpdateTime = System.currentTimeMillis()
+    /*val random = Random(10) //Use seed to be able to compare results
+    var lastUpdateTime = System.currentTimeMillis()*/
 
     init {
         //Initialize QMatrix
@@ -32,7 +35,7 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
 
     //We are basically unrolling our grid
     //Ex.
-    // (x, y)
+    // (row, column)
     // A(0,0) | C (0,1)
     // B(1,0) | D (1, 1)
     //
@@ -43,19 +46,8 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
     // B (1)
     // C (2)
     // D (3)
-    fun gridPointToMatrix(p: Point): Int {
-        return p.x + grid.numCells * p.y
-    }
 
-    //Inverse of gridPointToMatrix
-    fun matrixToGridPoint(sourceOrTarget: Int): Point {
-        val x = sourceOrTarget % grid.numCells
-        val y = sourceOrTarget / grid.numCells
-
-        return Point(x, y)
-    }
-
-    fun QIteration() {
+    /*fun QIteration() {
         if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainedDelay))
             return
 
@@ -69,35 +61,37 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
         val highestRewardIndex: Int = nextTargets.map { Pair(it, RMatrix[s_t][it]) /* [rewardIndex, rewardValue] */ }.maxBy { it.second }!!.first
 
         s_t = highestRewardIndex
-    }
+    }*/
 
 
-    private fun restart() {
+    /*private fun restart() {
         s_t = random.nextInt(matrixSize) //note nextInt is exclusive
         println("Restarting")
-    }
+    }*/
 
     //Q(st,at)←Q(st,at)+α[rt+γmaxaQ(st+1,a)−Q(st,at)]
-    fun QLearningIteration() {
-        if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainingDelay))
-            return
+    fun QLearningIteration(a_t: Int): Int {
+        /*if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainingDelay))
+            return*/
 
         //Restart q search
-        if(s_t == rewardRow) restart()
+        //if(s_t == rewardRow) restart()
 
-        lastUpdateTime = System.currentTimeMillis()
+        //lastUpdateTime = System.currentTimeMillis()
 
-        val nextStatesIndexes = getNextStatesIndexes(s_t)
-        val a_t = nextStatesIndexes[random.nextInt(nextStatesIndexes.size)]
+        //val nextStatesIndexes = getNextStatesIndexes(s_t)
+        //val a_t = nextStatesIndexes[random.nextInt(nextStatesIndexes.size)]
 
 
         val nextTargets = getNextStatesIndexes(a_t)
         val maxNextReward: Int = nextTargets.map { RMatrix[a_t][it] }.max() ?: 0
 
         QMatrix[s_t][a_t] = (QMatrix[s_t][a_t] + alpha * (RMatrix[s_t][a_t] + gamma * maxNextReward - QMatrix[s_t][a_t])).toInt()
-        println((++iteration).toString() + ": " + (65 + s_t).toChar() + "-" + (65 + a_t).toChar() + " = " + QMatrix[s_t][a_t])
+        //println((++iteration).toString() + ": " + (65 + s_t).toChar() + "-" + (65 + a_t).toChar() + " = " + QMatrix[s_t][a_t])
 
+        val updatedQValue = QMatrix[s_t][a_t]
         s_t = a_t
+        return updatedQValue
     }
 
     fun getNextStatesIndexes(rowIndex: Int): IntArray {
@@ -111,33 +105,33 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
 
     fun createRMatrix() {
         val edgeList = ArrayList<Edge>()
-        for (x in 0..grid.numCells - 1) {
-            for (y in 0..grid.numCells - 1) {
+        for (row in 0..grid.numCells - 1) {
+            for (column in 0..grid.numCells - 1) {
                 //Up
-                createEdge(x, y, x - 1, y)?.let { edgeList.add(it) }
+                createEdge(Coordinate(row, column), Coordinate(row - 1, column))?.let { edgeList.add(it) }
                 //Down
-                createEdge(x, y, x + 1, y)?.let { edgeList.add(it) }
+                createEdge(Coordinate(row, column), Coordinate(row + 1, column))?.let { edgeList.add(it) }
                 //Left
-                createEdge(x, y, x, y - 1)?.let { edgeList.add(it) }
+                createEdge(Coordinate(row, column), Coordinate(row, column - 1))?.let { edgeList.add(it) }
                 //Right
-                createEdge(x, y, x, y + 1)?.let { edgeList.add(it) }
+                createEdge(Coordinate(row, column), Coordinate(row, column + 1))?.let { edgeList.add(it) }
             }
         }
-        //Add recursive edge(s)
-        createEdge(grid.rewardGridLocation.x, grid.rewardGridLocation.y, grid.rewardGridLocation.x, grid.rewardGridLocation.y)?.let { edgeList.add(it) }
+        //Add recursive edge(s) TODO
+        //createEdge(grid.rewardGridLocation.x, grid.rewardGridLocation.y, grid.rewardGridLocation.x, grid.rewardGridLocation.y)?.let { edgeList.add(it) }
 
         //Add edges
-        for ((source, target, weight) in edgeList) {
-            RMatrix[gridPointToMatrix(source)][gridPointToMatrix(target)] = weight
+        for ((first, second, weight) in edgeList) {
+            RMatrix[first.toMatrixIndex()][second.toMatrixIndex()] = weight
         }
     }
 
-    private fun createEdge(sourceX: Int, sourceY: Int, x: Int, y: Int): Edge? {
-        if(!(x in 0..grid.numCells - 1 && y in 0..grid.numCells - 1))
-            return null
-
-        val weight = grid.cells[x][y]
-        return Edge(Point(sourceX, sourceY), Point(x, y), weight)
+    private fun createEdge(first: Coordinate, second: Coordinate): Edge? {
+        if(second.row in 0..grid.numCells - 1 && second.column in 0..grid.numCells - 1) {
+            val weight = grid.cells[second.row][second.column]
+            return Edge(first, second, weight)
+        }
+        return null
     }
 
 

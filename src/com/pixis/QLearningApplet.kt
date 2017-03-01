@@ -14,8 +14,8 @@ fun main(args: Array<String>) {
 class ExampleApplet : PApplet() {
     val grid = Grid(Settings.NUM_CELLS,
             listOf(
-                CoordinateReward(Coordinate(row = 2, column = 2), reward = 50),
-                CoordinateReward(Coordinate(row = 3, column = 1), reward = -70)
+                CoordinateReward(Coordinate(row = 2, column = 2), reward = 100),
+                CoordinateReward(Coordinate(row = 3, column = 1), reward = -100)
             )
     )
 
@@ -79,7 +79,7 @@ class ExampleApplet : PApplet() {
         textSize(cellPixelSize / 10f)
         textAlign(PConstants.CENTER, PConstants.CENTER)
 
-        //cur_state = QLearner.QLearning(30)
+        cur_state = QLearner.QLearning(30)
     }
 
     override fun draw() {
@@ -129,7 +129,7 @@ class ExampleApplet : PApplet() {
         if (reward > 0) {
             cellColor = lerpColor(reward / 100f, Color.gray, Color.green)
         } else if (reward < 0) {
-            cellColor = lerpColor(reward / 100f, Color.gray, Color.red)
+            cellColor = lerpColor(Math.abs(reward) / 100f, Color.gray, Color.red)
         }
 
         return cellColor.rgb

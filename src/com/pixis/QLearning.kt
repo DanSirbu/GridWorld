@@ -14,6 +14,7 @@ class QLearning(val grid: Grid) {
 
     var RMatrix = Array(matrixSize) { IntArray(matrixSize) }
     var QMatrix = Array(matrixSize) { IntArray(matrixSize) }
+    val random = Random()
 
     init {
         //Initialize QMatrix
@@ -38,9 +39,36 @@ class QLearning(val grid: Grid) {
     // C (2)
     // D (3)
 
-    fun QIteration() {
+    fun QLearning(numEpisodes: Int) {
+        for(i in 1..numEpisodes) {
+            state = 0
+            while (state != finalState) {
+                val action = getRandomNextActions(state)
+                QLearningIteration(action = action)
+            }
+        }
+    }
+
+    /**
+     * Returns the path to the goal
+     */
+    fun QAction(initialState: Int, goalState: Int): List<Int> {
+        state = initialState
+        val path: MutableList<Int> = ArrayList()
+
+        path.add(initialState)
+        while (state != goalState) {
+            state = QGreedyAction()
+            path.add(state)
+        }
+        path.reverse()
+
+        return path
+    }
+
+    fun QGreedyAction(): Int {
         val maxQ = maxQ(state)
-        state = maxQ.first
+        return maxQ.first
     }
 
     //Q(st,at)←Q(st,at)+α[rt+γmaxaQ(st+1,a)−Q(st,at)]
@@ -74,6 +102,10 @@ class QLearning(val grid: Grid) {
         return validIndexes.toIntArray()
     }
 
+    fun getRandomNextActions(current_state: Int): Int {
+        val actions = getNextStatesIndexes(current_state)
+        return actions[random.nextInt(actions.size)]
+    }
     fun createRMatrix() {
         val edgeList = ArrayList<Edge>()
         for (row in 0..grid.numCells - 1) {

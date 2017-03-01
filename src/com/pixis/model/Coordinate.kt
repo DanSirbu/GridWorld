@@ -19,6 +19,7 @@ data class Coordinate(val row: Int, val column: Int) {
         }
     }
 }
+
 fun Coordinate.toMatrixIndex(): Int {
     return Coordinate.toMatrixIndex(this)
 }

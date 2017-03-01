@@ -6,21 +6,14 @@ import com.pixis.model.toMatrixIndex
 import java.awt.Point
 import java.util.*
 
-class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: Int = 500) {
+class QLearning(val grid: Grid) {
     val matrixSize = grid.numCells * grid.numCells
 
-    var state: Int = 1 //state = currentState
-    val finalState = grid.rewardGridLocation.toMatrixIndex()
-
-    var Paused = false
-    var isLearning: Boolean = true
+    var state: Int = 0 //Initial state
+    val finalState = grid.maxValueIndexAndValue.coord.toMatrixIndex()
 
     var RMatrix = Array(matrixSize) { IntArray(matrixSize) }
     var QMatrix = Array(matrixSize) { IntArray(matrixSize) }
-
-    //For Q Update
-    /*val random = Random(10) //Use seed to be able to compare results
-    var lastUpdateTime = System.currentTimeMillis()*/
 
     init {
         //Initialize QMatrix
@@ -45,48 +38,19 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
     // C (2)
     // D (3)
 
-    /*fun QIteration() {
-        if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainedDelay))
-            return
-
-        lastUpdateTime = System.currentTimeMillis()
-
-        //Restart q search if at the end
-        if(state == rewardRow)
-            restart()
-
-        val nextTargets = getNextStatesIndexes(state)
-        val highestRewardIndex: Int = nextTargets.map { Pair(it, RMatrix[state][it]) /* [rewardIndex, rewardValue] */ }.maxBy { it.second }!!.first
-
-        state = highestRewardIndex
-    }*/
-
-
-    /*private fun restart() {
-        state = random.nextInt(matrixSize) //note nextInt is exclusive
-        println("Restarting")
-    }*/
+    fun QIteration() {
+        val maxQ = maxQ(state)
+        state = maxQ.first
+    }
 
     //Q(st,at)←Q(st,at)+α[rt+γmaxaQ(st+1,a)−Q(st,at)]
     fun QLearningIteration(action: Int): Int {
-        /*if(Paused || (System.currentTimeMillis() - lastUpdateTime < trainingDelay))
-            return*/
-
-        //Restart q search
-        //if(state == rewardRow) restart()
-
-        //lastUpdateTime = System.currentTimeMillis()
-
-        //val nextStatesIndexes = getNextStatesIndexes(state)
-        //val action = nextStatesIndexes[random.nextInt(nextStatesIndexes.size)]
-
         if(state == finalState) {
             state = action
             return 0
         }
 
-        QMatrix[state][action] = (QMatrix[state][action] + Settings.Alpha * (RMatrix[state][action] + Settings.DiscountFactor * maxQ(action) - QMatrix[state][action])).toInt()
-        //println((++iteration).toString() + ": " + (65 + state).toChar() + "-" + (65 + action).toChar() + " = " + QMatrix[state][action])
+        QMatrix[state][action] = (QMatrix[state][action] + Settings.Alpha * (RMatrix[state][action] + Settings.DiscountFactor * maxQ(action).second - QMatrix[state][action])).toInt()
 
         val updatedQValue = QMatrix[state][action]
         state = action
@@ -95,10 +59,11 @@ class QLearning(val grid: Grid, val trainingDelay: Int = 100, val trainedDelay: 
 
     /**
      * Gets the max q for the action
+     * Returns [index, value]
      */
-    fun maxQ(action: Int): Int {
+    fun maxQ(action: Int): Pair<Int, Int> {
         val nextTargets = getNextStatesIndexes(action)
-        return nextTargets.map { QMatrix[action][it] }.max() ?: 0
+        return nextTargets.map { rewardIndex -> Pair(rewardIndex, QMatrix[action][rewardIndex]) }.maxBy { it.second }!!
     }
     fun getNextStatesIndexes(rowIndex: Int): IntArray {
         val validIndexes = ArrayList<Int>()

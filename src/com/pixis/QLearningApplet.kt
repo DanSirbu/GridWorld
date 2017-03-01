@@ -12,13 +12,19 @@ fun main(args: Array<String>) {
 }
 
 class ExampleApplet : PApplet() {
-    val lastCellIndex = Settings.NUM_CELLS - 1
-    val grid = Grid(numCells = Settings.NUM_CELLS, rewardGridLocation = Coordinate(row = 1, column = 2))
-    val QLearner = QLearning(grid = grid, trainingDelay = 100, trainedDelay = 500)
+    val grid = Grid(Settings.NUM_CELLS,
+            listOf(
+                CoordinateReward(Coordinate(row = 2, column = 2), reward = 100),
+                CoordinateReward(Coordinate(row = 3, column = 1), reward = -50)
+            )
+    )
+
+    val QLearner = QLearning(grid)
 
     val screenSize = 500
     val cellPixelSize = screenSize / Settings.NUM_CELLS
 
+    var Paused = false
     var showGrid = false
 
     override fun settings() {
@@ -28,7 +34,7 @@ class ExampleApplet : PApplet() {
 
     override fun mouseClicked() {
         //Note, since we use row = x, y and x are reversed
-        if (!QLearner.Paused)
+        if (!Paused)
             return
 
         val row = mouseY / cellPixelSize
@@ -49,16 +55,12 @@ class ExampleApplet : PApplet() {
         } else {
             when (key) {
                 ' ' -> {
-                    QLearner.Paused = !QLearner.Paused
-                    showGrid = QLearner.Paused
-                    if(QLearner.Paused)
+                    Paused = !Paused
+                    showGrid = Paused
+                    if(Paused)
                         System.out.println("Paused")
                     else
                         System.out.println("UnPaused")
-                }
-                10.toChar() -> { // 10 = Enter
-                    QLearner.isLearning = !QLearner.isLearning
-                    System.out.println("Learning: " + QLearner.isLearning)
                 }
                 'r' -> Debugging.printMatrix(QLearner.RMatrix, QLearner.matrixSize)
                 'q' -> Debugging.printMatrix(QLearner.QMatrix, QLearner.matrixSize)
@@ -84,33 +86,29 @@ class ExampleApplet : PApplet() {
     override fun draw() {
         background(255)
 
-        //if (QLearner.isLearning) QLearner.QLearningIteration() else QLearner.QIteration()
+        val currentStateCoord = Coordinate.fromMatrixIndex(QLearner.state)
 
-        val currentStatePoint = Coordinate.fromMatrixIndex(QLearner.state)
-
-        val a = 'A'
         //Draw states
         for (row in 0..Settings.NUM_CELLS - 1) {
             for (column in 0..Settings.NUM_CELLS - 1) {
-                val coordinate = Coordinate(row, column)
+                val gridCoord = Coordinate(row, column)
 
                 if (showGrid) {
                     drawState(row, column)
                 } else {
-                    drawTriangles(coordinate)
-                    if(coordinate.toMatrixIndex() == QLearner.finalState) { //Always draw reward
+                    drawTriangles(gridCoord)
+                    if(grid.rewardsCoord.contains(gridCoord)) { //Always draw reward
                         drawState(row, column)
                     }
                 }
 
-                if (currentStatePoint == coordinate) {
+                //Draw Current State
+                if (gridCoord == currentStateCoord) {
                     fill(Color.BLUE.rgb)
-                    ellipse((coordinate.column + 0.5f) * cellPixelSize, (coordinate.row + 0.5f) * cellPixelSize, cellPixelSize / 4.0f, cellPixelSize / 4.0f)
+                    ellipse((gridCoord.column + 0.5f) * cellPixelSize, (gridCoord.row + 0.5f) * cellPixelSize, cellPixelSize / 4.0f, cellPixelSize / 4.0f)
                 }
 
-                /*fill(255)
-                val stateChar:Char = (a + coordinate.toMatrixIndex())
-                text(stateChar, (column + 0.5f) * cellPixelSize, (row + 0.5f) * cellPixelSize)*/
+                //drawStateLabel(gridCoord)
             }
         }
     }
@@ -119,6 +117,12 @@ class ExampleApplet : PApplet() {
         fill(getStateColor(grid.cells[row][column]))
         //Note, since we use row = x, y and x are reversed
         rect((column * cellPixelSize).toFloat(), (row * cellPixelSize).toFloat(), cellPixelSize.toFloat(), cellPixelSize.toFloat()) //rect(xleftcorner, ytopcorner, width, height);
+    }
+
+    private fun drawStateLabel(coord: Coordinate) {
+        fill(255)
+        val stateChar:Char = ('A' + coord.toMatrixIndex())
+        text(stateChar, (coord.column + 0.5f) * cellPixelSize, (coord.row + 0.5f) * cellPixelSize)
     }
 
     fun getStateColor(reward: Int): Int {

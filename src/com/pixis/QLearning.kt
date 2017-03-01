@@ -9,7 +9,6 @@ import java.util.*
 class QLearning(val grid: Grid) {
     val matrixSize = grid.numCells * grid.numCells
 
-    var state: Int = 0 //Initial state
     val finalState = grid.maxValueIndexAndValue.coord.toMatrixIndex()
 
     var RMatrix = Array(matrixSize) { IntArray(matrixSize) }
@@ -39,26 +38,32 @@ class QLearning(val grid: Grid) {
     // C (2)
     // D (3)
 
-    fun QLearning(numEpisodes: Int) {
+    /**
+     * Returns the last state
+     */
+    fun QLearning(numEpisodes: Int, startState: Int = 0): Int {
+        var state: Int = startState
         for(i in 1..numEpisodes) {
-            state = 0
+            state = startState
             while (state != finalState) {
                 val action = getRandomNextActions(state)
-                QLearningIteration(action = action)
+                state = QLearningIteration(state, action)
             }
         }
+
+        return state
     }
 
     /**
      * Returns the path to the goal
      */
     fun QAction(initialState: Int, goalState: Int): List<Int> {
-        state = initialState
         val path: MutableList<Int> = ArrayList()
 
-        path.add(initialState)
+        var state = initialState
+        path.add(state)
         while (state != goalState) {
-            state = QGreedyAction()
+            state = QGreedyAction(state)
             path.add(state)
         }
         path.reverse()
@@ -66,23 +71,20 @@ class QLearning(val grid: Grid) {
         return path
     }
 
-    fun QGreedyAction(): Int {
+    fun QGreedyAction(state: Int): Int {
         val maxQ = maxQ(state)
         return maxQ.first
     }
 
     //Q(st,at)←Q(st,at)+α[rt+γmaxaQ(st+1,a)−Q(st,at)]
-    fun QLearningIteration(action: Int): Int {
-        if(state == finalState) {
-            state = action
-            return 0
+    fun QLearningIteration(state: Int, action: Int): Int {
+        if(state == finalState) { //Dont update q
+            return action
         }
 
         QMatrix[state][action] = (QMatrix[state][action] + Settings.Alpha * (RMatrix[state][action] + Settings.DiscountFactor * maxQ(action).second - QMatrix[state][action])).toInt()
 
-        val updatedQValue = QMatrix[state][action]
-        state = action
-        return updatedQValue
+        return action
     }
 
     /**

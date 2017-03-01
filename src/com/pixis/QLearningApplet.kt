@@ -14,8 +14,8 @@ fun main(args: Array<String>) {
 class ExampleApplet : PApplet() {
     val grid = Grid(Settings.NUM_CELLS,
             listOf(
-                CoordinateReward(Coordinate(row = 2, column = 2), reward = 100),
-                CoordinateReward(Coordinate(row = 3, column = 1), reward = -50)
+                CoordinateReward(Coordinate(row = 2, column = 2), reward = 50),
+                CoordinateReward(Coordinate(row = 3, column = 1), reward = -70)
             )
     )
 
@@ -32,20 +32,17 @@ class ExampleApplet : PApplet() {
         noSmooth()
     }
 
+    var cur_state = 0
     override fun mouseClicked() {
-        //Note, since we use row = x, y and x are reversed
-        if (!Paused)
-            return
-
         val row = mouseY / cellPixelSize
         val column = mouseX / cellPixelSize
 
-        QLearner.state = Coordinate(row, column).toMatrixIndex()
+        cur_state = Coordinate(row, column).toMatrixIndex()
     }
 
     override fun keyPressed() {
         if (key == CODED.toChar()) {
-            val xy = Coordinate.fromMatrixIndex(QLearner.state)
+            val xy = Coordinate.fromMatrixIndex(cur_state)
             when (keyCode) {
                 PConstants.UP -> moveStateTo(xy.row - 1, xy.column)
                 PConstants.LEFT -> moveStateTo(xy.row, xy.column - 1)
@@ -74,19 +71,21 @@ class ExampleApplet : PApplet() {
             return
 
         val action = coordinate.toMatrixIndex()
-        QLearner.QLearningIteration(action)
+        cur_state = QLearner.QLearningIteration(cur_state, action)
     }
 
     override fun setup() {
         stroke(48) //Color of lines
         textSize(cellPixelSize / 10f)
         textAlign(PConstants.CENTER, PConstants.CENTER)
+
+        //cur_state = QLearner.QLearning(30)
     }
 
     override fun draw() {
         background(255)
 
-        val currentStateCoord = Coordinate.fromMatrixIndex(QLearner.state)
+        val currentStateCoord = Coordinate.fromMatrixIndex(cur_state)
 
         //Draw states
         for (row in 0..Settings.NUM_CELLS - 1) {

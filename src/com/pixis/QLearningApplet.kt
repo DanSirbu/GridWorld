@@ -8,10 +8,10 @@ import java.awt.Color
 import java.awt.Point
 
 fun main(args: Array<String>) {
-    PApplet.main("com.pixis.ExampleApplet")
+    PApplet.main("com.pixis.QLearningApplet")
 }
 
-class ExampleApplet : PApplet() {
+class QLearningApplet : PApplet() {
     val grid = Grid(Settings.NUM_CELLS,
             listOf(
                 CoordinateReward(Coordinate(row = 2, column = 2), reward = 100),
@@ -26,6 +26,15 @@ class ExampleApplet : PApplet() {
 
     var Paused = false
     var showGrid = false
+
+    override fun setup() {
+        stroke(48) //Color of lines
+        textSize(cellPixelSize / 10f)
+        textAlign(PConstants.CENTER, PConstants.CENTER)
+
+
+        //cur_state = QLearner.QLearning(30) //Run Q algorithm learning phase for 30 iterations
+    }
 
     override fun settings() {
         size(screenSize, screenSize)
@@ -72,14 +81,6 @@ class ExampleApplet : PApplet() {
 
         val action = coordinate.toMatrixIndex()
         cur_state = QLearner.QLearningIteration(cur_state, action)
-    }
-
-    override fun setup() {
-        stroke(48) //Color of lines
-        textSize(cellPixelSize / 10f)
-        textAlign(PConstants.CENTER, PConstants.CENTER)
-
-        cur_state = QLearner.QLearning(30)
     }
 
     override fun draw() {

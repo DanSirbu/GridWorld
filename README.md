@@ -1,9 +1,10 @@
-# QLearning
-Q-Learning in kotlin
+# Gridworld with Q-Learning algorithm
+
+<img src="screenshots/screenshot.gif" width="70%" />
 
 ##To Run
 ```
-  gradlew run (Starts QLearningApplet.kt)
+  gradlew run
 ```
 ###Commands
 
@@ -15,5 +16,3 @@ Spacebar: Switch between grid and QMatrix
 Enter: Switch between learning and greedy reward following
 MouseClick: Switch the current state
 ```
-
-<img src="screenshots/screenshot.gif" width="60%" />

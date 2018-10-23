@@ -2,11 +2,11 @@
 
 <img src="screenshots/screenshot.gif" width="70%" />
 
-##To Run
+## To Run
 ```
   gradlew run
 ```
-###Commands
+### Commands
 
 ```
 Arrow keys: Move to new state and update the Q Matrix
